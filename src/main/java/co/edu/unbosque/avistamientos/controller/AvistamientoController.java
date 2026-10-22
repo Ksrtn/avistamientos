@@ -9,15 +9,19 @@ import org.springframework.web.bind.annotation.*;
 
 import co.edu.unbosque.avistamientos.model.Avistamiento;
 import co.edu.unbosque.avistamientos.repository.AvistamientoRepository;
+import co.edu.unbosque.avistamientos.servicio.ServicioDeAvistamientos;
+import co.edu.unbosque.avistamientos.validacion.AvistamientoInvalidoException;
 
 @RestController
 @RequestMapping("/avistamientos")
 public class AvistamientoController {
 
     private final AvistamientoRepository repository;
+    private final ServicioDeAvistamientos servicio;
 
-    public AvistamientoController(AvistamientoRepository repository) {
+    public AvistamientoController(AvistamientoRepository repository, ServicioDeAvistamientos servicio) {
         this.repository = repository;
+        this.servicio = servicio;
     }
 
     @GetMapping
@@ -25,7 +29,7 @@ public class AvistamientoController {
         return repository.findAll();
     }
 
-    // Bonus: conteo por especie
+
     @GetMapping("/resumen")
     public Map<String, Long> resumen() {
         return repository.findAll().stream()
@@ -41,28 +45,14 @@ public class AvistamientoController {
 
     @PostMapping
     public ResponseEntity<Avistamiento> crear(@RequestBody Avistamiento a) {
-        if (datosIncompletos(a)) {
-            return ResponseEntity.badRequest().build();
-        }
-        a.setId(null); // el id lo asigna el sistema
-        return ResponseEntity.status(HttpStatus.CREATED).body(repository.save(a));
+        return ResponseEntity.status(HttpStatus.CREATED).body(servicio.registrar(a));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Avistamiento> actualizar(@PathVariable Long id, @RequestBody Avistamiento datos) {
-        Optional<Avistamiento> existente = repository.findById(id);
-        if (existente.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        if (datosIncompletos(datos)) {
-            return ResponseEntity.badRequest().build();
-        }
-        Avistamiento a = existente.get();
-        a.setEspecie(datos.getEspecie());
-        a.setLugar(datos.getLugar());
-        a.setFecha(datos.getFecha());
-        a.setObservador(datos.getObservador());
-        return ResponseEntity.ok(repository.save(a));
+        return servicio.actualizar(id, datos)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
@@ -71,15 +61,11 @@ public class AvistamientoController {
             return ResponseEntity.notFound().build();
         }
         repository.deleteById(id);
-        return ResponseEntity.noContent().build(); // 204
+        return ResponseEntity.noContent().build();
     }
 
-    private boolean datosIncompletos(Avistamiento a) {
-        return a == null || vacio(a.getEspecie()) || vacio(a.getLugar())
-                || vacio(a.getFecha()) || vacio(a.getObservador());
-    }
-
-    private boolean vacio(String s) {
-        return s == null || s.isBlank();
+    @ExceptionHandler(AvistamientoInvalidoException.class)
+    public ResponseEntity<Map<String, Object>> datosInvalidos(AvistamientoInvalidoException e) {
+        return ResponseEntity.badRequest().body(Map.of("errores", e.getErrores()));
     }
 }
