@@ -1,38 +1,36 @@
 # Taller 5. Clean Architecture y arquitectura hexagonal
 
-Ingeniería de Software 2, 11 de noviembre de 2026  
 Karen Dayana Morera Fonseca
 
-Repositorio: https://github.com/Ksrtn/avistamientos  
-Rama: `master` (no usé una rama aparte, los cambios están en commits separados sobre `master`)
+Repositorio: https://github.com/Ksrtn/avistamientos
 
 ## Parte 1. Investigación
 
 ### 1. El problema que ve Cockburn, puertos, adaptadores y la simetría
 
-Cockburn arranca de dos problemas que veía en las aplicaciones de su época. El primero es que la lógica de negocio se mete dentro del código de la interfaz de usuario, y entonces no hay forma de probar la aplicación con pruebas automáticas ni de usarla desde otro programa o desde un proceso por lotes. El segundo es que la aplicación queda amarrada a la base de datos real: si la base se cae o no está disponible, los programadores no pueden trabajar. Para él los dos problemas son el mismo, porque los dos salen de mezclar la lógica de negocio con la forma de hablar con las cosas de afuera (Cockburn, 2005).
+El autor nos muestra dos problemas que veía en las aplicaciones antes. El primero es que la lógica de negocio se mete dentro del código de la interfaz de usuario, y entonces no hay forma de probar la aplicación con pruebas automáticas ni de usarla desde otro programa. El segundo es que la aplicación queda amarrada a la base de datos real, esto significa que si la base se cae, los programadores no pueden trabajar. El autor dice que como tal es un solo problema, la lógica de negocio está revuelta con el código que habla con el usuario y con la base de datos (Cockburn, 2005).
 
-Su propuesta separa la aplicación en un "adentro" y un "afuera", y lo de adentro no debe filtrarse hacia afuera. Un puerto es una conversación con un propósito: la aplicación define una API para cada cosa que necesita hablar con el exterior, por ejemplo "registrar avistamientos" o "guardar avistamientos", sin decir con qué tecnología. Un adaptador es la pieza que convierte esa API en lo que entiende un dispositivo concreto. Un mismo puerto puede tener varios adaptadores: una interfaz gráfica, un script de pruebas automáticas o una base de datos falsa en memoria (Cockburn, 2005).
+Cockburn propone partir la aplicación en dos partes, lo de adentro y lo de afuera, y que lo de adentro no se revuelva con lo de afuera. Para conectar los dos lados usa puertos y adaptadores. Un puerto es lo que la aplicación necesita hacer con algo externo como guardar avistamientos, pero sin decir con qué tecnología se va a hacer. El adaptador es el que se encarga de esa parte técnica y traduce lo que pide el puerto a algo que el programa o el dispositivo de afuera entienda. Lo bueno es que a un mismo puerto se le pueden conectar adaptadores distintos. Puede ser una interfaz gráfica, unas pruebas automáticas o una base de datos de mentiras que solo existe en memoria (Cockburn, 2005).
 
-La simetría viene de que Cockburn trata igual los dos lados. En el lado del usuario, alguien maneja la aplicación (él lo llama actor primario) a través de un puerto y un adaptador. En el lado de la base de datos es la aplicación la que maneja a otro sistema (actor secundario), y lo hace también por un puerto y un adaptador. El dibujo de capas de siempre pone la interfaz arriba y la base de datos abajo como si fueran cosas distintas. Para Cockburn la diferencia que importa es la de adentro y afuera, y los dos lados reciben el mismo trato (Cockburn, 2005). En mi API se ve así: el controlador REST es el adaptador del lado del usuario y el repositorio de JPA es el adaptador del lado de la base de datos, y los dos se conectan al núcleo de la misma forma.
+Lo de la simetría es porque Cockburn trata igual el lado del usuario y el de la base de datos. Del lado del usuario hay alguien que usa la aplicación (él lo llama actor primario) y entra por un puerto y un adaptador. Del lado de la base de datos pasa al revés. Ahí es la aplicación la que usa otro sistema (el actor secundario), pero igual lo hace por un puerto y un adaptador. En el dibujo de capas de siempre la interfaz va arriba y la base de datos abajo, como si fueran cosas muy distintas. Para Cockburn eso no es lo importante. Lo que importa es qué está adentro de la aplicación y qué está afuera, y los dos lados se conectan de la misma manera (Cockburn, 2005). En mi API eso se ve con el controlador REST, que es el adaptador del lado del usuario, y con el repositorio de JPA, que es el del lado de la base de datos. Los dos llegan al núcleo por un puerto.
 
 ### 2. Los círculos de Martin y la regla de dependencia
 
-Martin dibuja cuatro círculos. En el centro están las entidades, que guardan las reglas de negocio de toda la empresa y son lo que menos cambia cuando cambia algo de afuera. El siguiente círculo son los casos de uso, con las reglas propias de esta aplicación: dirigen el flujo de datos hacia las entidades y desde ellas. Después vienen los adaptadores de interfaz (controladores, presentadores, gateways), que convierten los datos entre el formato que le sirve a los casos de uso y el que le sirve a la web o a la base de datos. Afuera de todo quedan los frameworks y drivers: la base de datos, el framework web y otras herramientas, donde casi solo hay código para pegar las piezas (Martin, 2012).
+Martin lo dibuja como cuatro círculos, uno dentro del otro. En el centro están las entidades, que tienen las reglas de negocio más generales de la empresa. Son lo que menos se mueve cuando cambia algo de afuera. Luego vienen los casos de uso, que tienen las reglas propias de esta aplicación y se encargan de mover los datos hacia las entidades y de vuelta. El tercer círculo es el de los adaptadores de interfaz, como los controladores, los presentadores y los gateways. Su trabajo es pasar los datos del formato que usan los casos de uso al que necesita la web o la base de datos, y al revés. En el círculo de afuera quedan los frameworks y drivers, o sea la base de datos, el framework web y demás herramientas. Ahí casi no se escribe código, solo lo necesario para conectar las piezas (Martin, 2012).
 
-La regla de dependencia dice que las dependencias del código fuente solo pueden apuntar hacia adentro. Lo que prohíbe es que un círculo interno sepa algo de uno externo: el código de adentro no puede mencionar ninguna clase, función o variable declarada afuera, y tampoco puede usar formatos de datos que define un framework de afuera (Martin, 2012). Martin aclara que no tienen que ser exactamente cuatro círculos. Puede haber más, pero la regla se cumple siempre.
+La regla de dependencia dice que en el código las dependencias solo pueden apuntar hacia adentro. Un círculo de adentro no puede saber nada de uno de afuera. Eso quiere decir que el código interno no puede nombrar ninguna clase, función ni variable que esté declarada afuera, y tampoco puede usar formatos de datos que vengan de un framework externo (Martin, 2012). Martin aclara que los cuatro círculos son un ejemplo. Puede haber más, pero la regla se cumple igual.
 
 ### 3. Cómo guarda datos el caso de uso sin depender de la base de datos
 
-La contradicción es que el flujo de control va hacia afuera (el caso de uso tiene que llamar algo que guarde), pero la dependencia de código tiene que ir hacia adentro. Martin lo resuelve con el principio de inversión de dependencias de SOLID: el caso de uso declara una interfaz en su propio círculo con lo que necesita, y la capa de afuera implementa esa interfaz. En tiempo de ejecución la llamada sale hacia afuera, pero en el código fuente la flecha apunta hacia adentro, porque es la implementación de afuera la que conoce a la interfaz de adentro y no al revés (Martin, 2012). Palermo dice lo mismo para su arquitectura: las capas internas definen las interfaces y las externas las implementan (Palermo, 2008).
+Lo que choca es esto: al ejecutarse, el caso de uso tiene que llamar algo de afuera para guardar los datos, pero según la regla el código solo puede depender de lo que está adentro. Martin lo arregla con el principio de inversión de dependencias de SOLID. El caso de uso crea en su mismo círculo una interfaz con lo que necesita, y la capa de afuera es la que la implementa. Cuando el programa corre, la llamada va hacia afuera, pero en el código la flecha sigue apuntando hacia adentro, porque la clase de afuera es la que conoce la interfaz de adentro y no al revés (Martin, 2012). Palermo dice algo parecido para su arquitectura: las capas de adentro definen las interfaces y las de afuera las implementan (Palermo, 2008).
 
-En mi API el ejemplo es `ServicioDeAvistamientos`. Para registrar un avistamiento llama a `RepositorioDeAvistamientos.guardar(...)`. `RepositorioDeAvistamientos` es una interfaz que está en el paquete `aplicacion/puerto/salida`, y no sabe nada de JPA. Quien la implementa es `RepositorioJpaDeAvistamientos`, que está en `adaptador/salida/persistencia` y por dentro usa Spring Data. El servicio nunca importa nada de la base de datos. Quien junta las dos piezas es `ConfiguracionDeAvistamientos`, que le pasa al servicio el adaptador al crearlo. El reloj funciona igual: el validador necesita saber qué día es hoy, entonces pide una interfaz `Reloj` y afuera la implementa `RelojDelSistema`. En las pruebas le paso `RelojFijo`.
+En mi API esto se ve con ServicioDeAvistamientos. Cuando tiene que registrar un avistamiento llama a RepositorioDeAvistamientos.guardar(...). RepositorioDeAvistamientos es una interfaz que está en el paquete aplicacion/puerto/salida y no sabe nada de JPA. La que la implementa es RepositorioJpaDeAvistamientos, que está en adaptador/salida/persistencia y por dentro usa Spring Data. Así el servicio nunca importa nada de la base de datos. La clase que une las dos piezas es ConfiguracionDeAvistamientos, que le entrega el adaptador al servicio cuando lo crea. Con el reloj pasa lo mismo. El validador necesita saber qué día es hoy, entonces pide una interfaz Reloj, y afuera la implementa RelojDelSistema. En las pruebas, en cambio, le paso RelojFijo.
 
 ### 4. Hexagonal, cebolla y Clean Architecture
 
-Las tres ponen la lógica de negocio en el centro y dejan la base de datos, la interfaz y el framework afuera, como detalles que se pueden cambiar. En las tres las dependencias apuntan hacia el centro, y en las tres eso se logra con interfaces que se definen adentro y se implementan afuera. Por eso las tres permiten probar el núcleo sin base de datos. Martin dice que las arquitecturas que él junta, entre ellas la hexagonal y la de cebolla, tienen el mismo objetivo, que es separar responsabilidades (Martin, 2012), y Palermo reconoce que su propuesta parte de la misma idea de Cockburn: sacar la infraestructura y escribir adaptadores para no quedar acoplado a ella (Palermo, 2008).
+En las tres arquitecturas la lógica de negocio va en el centro y la base de datos, la interfaz y el framework quedan afuera, como piezas que se pueden cambiar sin tocar el centro. Las tres hacen que las dependencias apunten hacia adentro, y lo logran igual: las interfaces se definen adentro y se implementan afuera. Gracias a eso, en cualquiera de las tres se puede probar el núcleo sin tener una base de datos. El mismo Martin dice que las arquitecturas que él reúne, entre ellas la hexagonal y la de cebolla, buscan lo mismo, que es separar responsabilidades (Martin, 2012). Palermo también reconoce que su idea viene de la de Cockburn: sacar la infraestructura y escribir adaptadores para no quedar amarrado a ella (Palermo, 2008).
 
-Lo que cambia es sobre todo el vocabulario y cuánto dicen del interior. Cockburn habla de puertos, adaptadores, adentro y afuera, y no dice cómo organizar lo que hay dentro del hexágono. Solo hay dos zonas (Cockburn, 2005). Palermo dibuja anillos: en el centro el modelo de dominio, alrededor los servicios de dominio y los servicios de aplicación, y en el anillo externo la interfaz, la infraestructura y las pruebas. Insiste en que la base de datos queda por fuera del centro (Palermo, 2008). Martin define cuatro círculos con nombres propios (entidades, casos de uso, adaptadores de interfaz, frameworks y drivers), los resume en una sola regla escrita y además dice qué datos deben cruzar los límites: estructuras simples, no entidades ni filas de la base de datos (Martin, 2012). Otra diferencia es lo que cada uno resalta. Cockburn pone el énfasis en que un puerto puede tener varios adaptadores, por ejemplo uno de pruebas, Palermo en el modelo de objetos como centro, y Martin en la dirección de las dependencias.
+Lo que más cambia entre ellas son los nombres y qué tanto explican lo que va por dentro. Cockburn habla de puertos y adaptadores, de adentro y de afuera, pero no dice cómo se organiza lo que va dentro del hexágono. Para él solo hay dos zonas (Cockburn, 2005). Palermo lo dibuja con anillos. En el centro pone el modelo de dominio, alrededor van los servicios de dominio y los de aplicación, y en el anillo de afuera quedan la interfaz, la infraestructura y las pruebas. Él repite varias veces que la base de datos no va en el centro (Palermo, 2008). Martin le pone nombre a cada uno de sus cuatro círculos (entidades, casos de uso, adaptadores de interfaz, frameworks y drivers) y lo resume todo en una sola regla. Además dice qué datos pueden pasar de un círculo a otro: estructuras sencillas, nunca entidades ni filas de la base de datos (Martin, 2012). También cambia en qué se fija cada uno. A Cockburn le interesa que un mismo puerto pueda tener varios adaptadores, como uno para pruebas. Palermo pone el modelo de objetos en el centro de todo, y para Martin lo principal es hacia dónde apuntan las dependencias.
 
 ### 5. ¿Se justifica en una API tan pequeña?
 
@@ -48,21 +46,23 @@ Por eso creo que en una API de cinco endpoints y una regla de validación vale l
 
 ### Arquitectura que elegí
 
-Elegí la arquitectura hexagonal (puertos y adaptadores) de Cockburn (2005). Mi API habla con tres cosas de afuera: los clientes HTTP, la base de datos y el reloj del sistema. Con el vocabulario de puertos y adaptadores cada una queda con un nombre claro, y el núcleo solo tiene dos partes (dominio y aplicación), lo cual alcanza para una API de este tamaño. No usé nombres de Clean Architecture ni de cebolla para no mezclar.
+Elegí la arquitectura hexagonal (puertos y adaptadores) de Cockburn (2005).
 
-| Concepto de la arquitectura hexagonal | Dónde quedó en el código |
+Mi API se comunica con tres cosas externas: quien hace las peticiones HTTP, la base de datos y el reloj del sistema. Con la idea de puertos y adaptadores, cada una de esas conexiones tiene su propio nombre y es fácil ubicarla en el código. El núcleo quedó solo con dos partes, el dominio y la aplicación, y para una API tan pequeña con eso basta. Tampoco usé nombres de Clean Architecture ni de la arquitectura de cebolla, para que no quedara una mezcla de las tres.
+
+| Arquitectura hexagonal | Dónde quedó |
 |---|---|
-| Núcleo, dominio | `dominio`: `Avistamiento`, `AvistamientoInvalidoException` |
-| Núcleo, lógica de la aplicación | `aplicacion/servicio`: `ServicioDeAvistamientos`, `ValidadorDeAvistamiento` |
-| Puerto de entrada (lo que se le puede pedir a la aplicación) | `aplicacion/puerto/entrada/GestionarAvistamientos` |
-| Puertos de salida (lo que la aplicación necesita de afuera) | `aplicacion/puerto/salida`: `RepositorioDeAvistamientos`, `Reloj` |
-| Adaptador de entrada | `adaptador/entrada/web/AvistamientoController` |
-| Adaptadores de salida | `adaptador/salida/persistencia` (JPA con H2) y `adaptador/salida/reloj/RelojDelSistema` |
-| Conexión de las piezas | `configuracion/ConfiguracionDeAvistamientos` |
+| Núcleo, dominio | `dominio`: **`Avistamiento`**, **`AvistamientoInvalidoException`** |
+| Núcleo, lógica de la aplicación | `aplicacion/servicio`: **`ServicioDeAvistamientos`**, **`ValidadorDeAvistamiento`** |
+| Puerto de entrada | `aplicacion/puerto/entrada/`**`GestionarAvistamientos`** |
+| Puertos de salida | `aplicacion/puerto/salida`: **`RepositorioDeAvistamientos`**, **`Reloj`** |
+| Adaptador de entrada | `adaptador/entrada/web/`**`AvistamientoController`** |
+| Adaptadores de salida | `adaptador/salida/`**`persistencia`** (JPA con H2) y `adaptador/salida/reloj/`**`RelojDelSistema`** |
+| Conexión de las piezas | `configuracion/`**`ConfiguracionDeAvistamientos`** |
 
-La regla que seguí es que nada de `dominio` ni de `aplicacion` importa Spring, JPA o algo de HTTP. Se puede comprobar con una búsqueda: en esos dos paquetes los únicos imports son de `java.*` y del mismo proyecto.
+Para organizar el código seguí una regla: nada de lo que está en dominio ni en aplicacion puede importar Spring, JPA ni nada relacionado con HTTP. Eso se puede revisar buscando los imports de esos dos paquetes, y solo aparecen clases de java.* y del mismo proyecto.
 
-Tomé una decisión que conviene decir. El controlador recibe y devuelve el `Avistamiento` del dominio como JSON, sin una clase intermedia para la web. Lo dejé así porque `Avistamiento` ya no tiene anotaciones de ningún framework y Jackson lo convierte sin que el dominio sepa nada de JSON, y así el JSON de la API queda exactamente igual que antes. Si el formato de la API y el del dominio empezaran a ser distintos, ahí sí haría falta esa clase.
+Hay una decisión que quiero aclarar. El controlador recibe y devuelve como JSON el mismo Avistamiento del dominio, sin una clase aparte para la web. Lo dejé así porque Avistamiento ya no tiene anotaciones de ningún framework, y Jackson lo convierte a JSON sin que el dominio tenga que saber nada de eso. Además, de esta forma el JSON que devuelve la API sigue siendo idéntico al de antes. Esa clase aparte solo haría falta si algún día el formato de la API y el del dominio dejaran de ser iguales.
 
 ### Estructura de carpetas
 
@@ -124,19 +124,39 @@ Las pruebas son las mismas 34 del taller anterior: 16 del validador, 6 del servi
 
 | | Antes del refactor | Después del refactor |
 |---|---|---|
-| Pruebas | 34 de 34 pasan | ___ de 34 pasan |
-| Cobertura de instrucciones | 92 % | ___ % |
-| Cobertura de ramas | 95 % | ___ % |
+| Pruebas | 34 de 34 pasan | 34 de 34 pasan |
+| Cobertura de instrucciones | 91 % | 93 % |
+| Cobertura de ramas | 95 % | 96 % |
 
-Antes, salida de las pruebas: (captura)
+Antes, salida de las pruebas:
 
-Antes, reporte de cobertura: (captura)
+![Antes, salida de las pruebas](evidencia/antes-pruebas.png)
 
-Después, salida de las pruebas: (captura)
+Antes, reporte de cobertura:
 
-Después, reporte de cobertura: (captura)
+![Antes, reporte de cobertura](evidencia/antes-cobertura.png)
 
-Muestra de la API antes y después (la misma petición en Swagger, `http://localhost:8080/swagger-ui.html`): (capturas)
+Después, salida de las pruebas:
+
+![Después, salida de las pruebas](evidencia/despues-pruebas.png)
+
+Después, reporte de cobertura:
+
+![Después, reporte de cobertura](evidencia/despues-cobertura.png)
+
+Antes:
+
+![Antes, POST en Swagger](evidencia/antes-api-post.png)
+
+![Antes, GET en Swagger](evidencia/antes-api-get.png)
+
+![Antes, endpoints en Swagger](evidencia/antes-api-endpoints.png)
+
+Después:
+
+![Después, GET en Swagger](evidencia/despues-api-get.png)
+
+![Después, endpoints en Swagger](evidencia/despues-api-endpoints.png)
 
 ### Qué fue lo más difícil de separar
 
