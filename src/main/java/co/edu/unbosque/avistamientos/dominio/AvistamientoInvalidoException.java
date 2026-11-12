@@ -1,4 +1,4 @@
-package co.edu.unbosque.avistamientos.validacion;
+package co.edu.unbosque.avistamientos.dominio;
 
 import java.util.List;
 

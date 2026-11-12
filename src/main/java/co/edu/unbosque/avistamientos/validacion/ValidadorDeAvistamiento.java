@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import co.edu.unbosque.avistamientos.model.Avistamiento;
+import co.edu.unbosque.avistamientos.dominio.Avistamiento;
 
 @Component
 public class ValidadorDeAvistamiento {

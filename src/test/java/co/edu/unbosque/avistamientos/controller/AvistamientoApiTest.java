@@ -17,8 +17,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.jayway.jsonpath.JsonPath;
 
-import co.edu.unbosque.avistamientos.model.Avistamiento;
-import co.edu.unbosque.avistamientos.repository.AvistamientoRepository;
+import co.edu.unbosque.avistamientos.adaptador.salida.persistencia.AvistamientoEntidad;
+import co.edu.unbosque.avistamientos.adaptador.salida.persistencia.AvistamientoJpaRepository;
 
 @SpringBootTest
 public class AvistamientoApiTest {
@@ -31,7 +31,7 @@ public class AvistamientoApiTest {
     private WebApplicationContext contexto;
 
     @Autowired
-    private AvistamientoRepository repository;
+    private AvistamientoJpaRepository repository;
 
     private MockMvc mvc;
 
@@ -41,8 +41,8 @@ public class AvistamientoApiTest {
         repository.deleteAll();
     }
 
-    private Avistamiento guardarEnBase(String especie) {
-        Avistamiento a = new Avistamiento();
+    private AvistamientoEntidad guardarEnBase(String especie) {
+        AvistamientoEntidad a = new AvistamientoEntidad();
         a.setEspecie(especie);
         a.setFecha("2026-09-01");
         a.setLugar("Parque Simón Bolívar");
@@ -71,7 +71,7 @@ public class AvistamientoApiTest {
     @DisplayName("GET /avistamientos/{id} existente devuelve 200 con todos sus campos")
     void verExistente_devuelve200ConElCuerpo() throws Exception {
         // Arrange
-        Avistamiento guardado = guardarEnBase("Zonotrichia capensis");
+        AvistamientoEntidad guardado = guardarEnBase("Zonotrichia capensis");
         // Act + Assert
         mvc.perform(get("/avistamientos/{id}", guardado.getId()))
                 .andExpect(status().isOk())
@@ -140,7 +140,7 @@ public class AvistamientoApiTest {
     @DisplayName("PUT válido devuelve 200 con los datos nuevos y el cambio queda en la base")
     void actualizarValido_devuelve200YPersiste() throws Exception {
         // Arrange
-        Avistamiento guardado = guardarEnBase("Zonotrichia capensis");
+        AvistamientoEntidad guardado = guardarEnBase("Zonotrichia capensis");
         // Act
         mvc.perform(put("/avistamientos/{id}", guardado.getId())
                         .contentType(MediaType.APPLICATION_JSON).content(JSON_VALIDO))
@@ -163,7 +163,7 @@ public class AvistamientoApiTest {
     @DisplayName("PUT con observador vacío devuelve 400 y no modifica el registro")
     void actualizarConObservadorVacio_devuelve400YNoModifica() throws Exception {
         // Arrange
-        Avistamiento guardado = guardarEnBase("Zonotrichia capensis");
+        AvistamientoEntidad guardado = guardarEnBase("Zonotrichia capensis");
         String json = """
                 {"especie": "Turdus fuscater", "fecha": "2026-10-10", "lugar": "Humedal Córdoba", "observador": ""}""";
         // Act + Assert
@@ -180,7 +180,7 @@ public class AvistamientoApiTest {
     @DisplayName("DELETE existente devuelve 204 y después el GET responde 404")
     void eliminarExistente_devuelve204YLuego404() throws Exception {
         // Arrange
-        Avistamiento guardado = guardarEnBase("Zonotrichia capensis");
+        AvistamientoEntidad guardado = guardarEnBase("Zonotrichia capensis");
         // Act
         mvc.perform(delete("/avistamientos/{id}", guardado.getId()))
                 .andExpect(status().isNoContent());

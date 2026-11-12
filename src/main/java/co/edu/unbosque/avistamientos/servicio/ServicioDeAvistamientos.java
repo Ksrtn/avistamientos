@@ -5,18 +5,18 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import co.edu.unbosque.avistamientos.model.Avistamiento;
-import co.edu.unbosque.avistamientos.repository.AvistamientoRepository;
-import co.edu.unbosque.avistamientos.validacion.AvistamientoInvalidoException;
+import co.edu.unbosque.avistamientos.aplicacion.puerto.salida.RepositorioDeAvistamientos;
+import co.edu.unbosque.avistamientos.dominio.Avistamiento;
+import co.edu.unbosque.avistamientos.dominio.AvistamientoInvalidoException;
 import co.edu.unbosque.avistamientos.validacion.ValidadorDeAvistamiento;
 
 @Service
 public class ServicioDeAvistamientos {
 
-    private final AvistamientoRepository repository;
+    private final RepositorioDeAvistamientos repository;
     private final ValidadorDeAvistamiento validador;
 
-    public ServicioDeAvistamientos(AvistamientoRepository repository, ValidadorDeAvistamiento validador) {
+    public ServicioDeAvistamientos(RepositorioDeAvistamientos repository, ValidadorDeAvistamiento validador) {
         this.repository = repository;
         this.validador = validador;
     }
@@ -24,11 +24,11 @@ public class ServicioDeAvistamientos {
     public Avistamiento registrar(Avistamiento a) {
         validarOLanzar(a);
         a.setId(null);
-        return repository.save(a);
+        return repository.guardar(a);
     }
 
     public Optional<Avistamiento> actualizar(Long id, Avistamiento datos) {
-        Optional<Avistamiento> existente = repository.findById(id);
+        Optional<Avistamiento> existente = repository.buscarPorId(id);
         if (existente.isEmpty()) {
             return Optional.empty();
         }
@@ -38,7 +38,7 @@ public class ServicioDeAvistamientos {
         a.setLugar(datos.getLugar());
         a.setFecha(datos.getFecha());
         a.setObservador(datos.getObservador());
-        return Optional.of(repository.save(a));
+        return Optional.of(repository.guardar(a));
     }
 
     private void validarOLanzar(Avistamiento a) {

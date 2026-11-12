@@ -7,38 +7,38 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import co.edu.unbosque.avistamientos.model.Avistamiento;
-import co.edu.unbosque.avistamientos.repository.AvistamientoRepository;
+import co.edu.unbosque.avistamientos.aplicacion.puerto.salida.RepositorioDeAvistamientos;
+import co.edu.unbosque.avistamientos.dominio.Avistamiento;
+import co.edu.unbosque.avistamientos.dominio.AvistamientoInvalidoException;
 import co.edu.unbosque.avistamientos.servicio.ServicioDeAvistamientos;
-import co.edu.unbosque.avistamientos.validacion.AvistamientoInvalidoException;
 
 @RestController
 @RequestMapping("/avistamientos")
 public class AvistamientoController {
 
-    private final AvistamientoRepository repository;
+    private final RepositorioDeAvistamientos repository;
     private final ServicioDeAvistamientos servicio;
 
-    public AvistamientoController(AvistamientoRepository repository, ServicioDeAvistamientos servicio) {
+    public AvistamientoController(RepositorioDeAvistamientos repository, ServicioDeAvistamientos servicio) {
         this.repository = repository;
         this.servicio = servicio;
     }
 
     @GetMapping
     public List<Avistamiento> listar() {
-        return repository.findAll();
+        return repository.listar();
     }
 
 
     @GetMapping("/resumen")
     public Map<String, Long> resumen() {
-        return repository.findAll().stream()
+        return repository.listar().stream()
                 .collect(Collectors.groupingBy(Avistamiento::getEspecie, Collectors.counting()));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Avistamiento> ver(@PathVariable Long id) {
-        return repository.findById(id)
+        return repository.buscarPorId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -57,10 +57,10 @@ public class AvistamientoController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        if (!repository.existsById(id)) {
+        if (!repository.existe(id)) {
             return ResponseEntity.notFound().build();
         }
-        repository.deleteById(id);
+        repository.eliminar(id);
         return ResponseEntity.noContent().build();
     }
 

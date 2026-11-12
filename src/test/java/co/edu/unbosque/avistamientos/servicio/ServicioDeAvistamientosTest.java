@@ -12,9 +12,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import co.edu.unbosque.avistamientos.model.Avistamiento;
-import co.edu.unbosque.avistamientos.repository.AvistamientoRepository;
-import co.edu.unbosque.avistamientos.validacion.AvistamientoInvalidoException;
+import co.edu.unbosque.avistamientos.aplicacion.puerto.salida.RepositorioDeAvistamientos;
+import co.edu.unbosque.avistamientos.dominio.Avistamiento;
+import co.edu.unbosque.avistamientos.dominio.AvistamientoInvalidoException;
 import co.edu.unbosque.avistamientos.validacion.RelojFijo;
 import co.edu.unbosque.avistamientos.validacion.ValidadorDeAvistamiento;
 
@@ -22,12 +22,12 @@ public class ServicioDeAvistamientosTest {
 
     private static final LocalDate HOY = LocalDate.of(2026, 10, 14);
 
-    private AvistamientoRepository repository;
+    private RepositorioDeAvistamientos repository;
     private ServicioDeAvistamientos servicio;
 
     @BeforeEach  
     void prepararServicio() {
-        repository = mock(AvistamientoRepository.class); // mock del repositorio
+        repository = mock(RepositorioDeAvistamientos.class); // mock del repositorio
         ValidadorDeAvistamiento validador = new ValidadorDeAvistamiento(new RelojFijo(HOY)); // stub del reloj
         servicio = new ServicioDeAvistamientos(repository, validador);
     }
@@ -46,12 +46,12 @@ public class ServicioDeAvistamientosTest {
     void registrarValido_loGuardaUnaSolaVez() {
         // Arrange
         Avistamiento valido = avistamiento("Turdus fuscater");
-        when(repository.save(any(Avistamiento.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(repository.guardar(any(Avistamiento.class))).thenAnswer(inv -> inv.getArgument(0));
         // Act
         Avistamiento guardado = servicio.registrar(valido);
         // Assert
         assertEquals("Turdus fuscater", guardado.getEspecie());
-        verify(repository, times(1)).save(valido);
+        verify(repository, times(1)).guardar(valido);
     }
 
     @Test
@@ -64,7 +64,7 @@ public class ServicioDeAvistamientosTest {
                 assertThrows(AvistamientoInvalidoException.class, () -> servicio.registrar(invalido));
         // Assert
         assertTrue(e.getErrores().get(0).startsWith("especie"));
-        verify(repository, never()).save(any());
+        verify(repository, never()).guardar(any());
     }
 
     @Test
@@ -77,7 +77,7 @@ public class ServicioDeAvistamientosTest {
         // Act
         servicio.registrar(conId);
         // Assert
-        verify(repository).save(captor.capture());
+        verify(repository).guardar(captor.capture());
         assertNull(captor.getValue().getId());
     }
 
@@ -85,24 +85,24 @@ public class ServicioDeAvistamientosTest {
     @DisplayName("Actualizar un id que no existe devuelve vacío y no guarda nada")
     void actualizarInexistente_devuelveVacioYNoGuarda() {
         // Arrange
-        when(repository.findById(5L)).thenReturn(Optional.empty());
+        when(repository.buscarPorId(5L)).thenReturn(Optional.empty());
         // Act
         Optional<Avistamiento> resultado = servicio.actualizar(5L, avistamiento("Turdus fuscater"));
         // Assert
         assertTrue(resultado.isEmpty());
-        verify(repository, never()).save(any());
+        verify(repository, never()).guardar(any());
     }
 
     @Test
     @DisplayName("Actualizar con datos inválidos lanza excepción y no guarda")
     void actualizarInvalido_lanzaExcepcionYNoGuarda() {
         // Arrange
-        when(repository.findById(1L)).thenReturn(Optional.of(avistamiento("Turdus fuscater")));
+        when(repository.buscarPorId(1L)).thenReturn(Optional.of(avistamiento("Turdus fuscater")));
         Avistamiento invalido = avistamiento("a".repeat(51));
         // Act
         assertThrows(AvistamientoInvalidoException.class, () -> servicio.actualizar(1L, invalido));
         // Assert
-        verify(repository, never()).save(any());
+        verify(repository, never()).guardar(any());
     }
 
     @Test
@@ -111,14 +111,14 @@ public class ServicioDeAvistamientosTest {
         // Arrange
         Avistamiento existente = avistamiento("Turdus fuscater");
         existente.setId(1L);
-        when(repository.findById(1L)).thenReturn(Optional.of(existente));
-        when(repository.save(any(Avistamiento.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(repository.buscarPorId(1L)).thenReturn(Optional.of(existente));
+        when(repository.guardar(any(Avistamiento.class))).thenAnswer(inv -> inv.getArgument(0));
         Avistamiento nuevosDatos = avistamiento("Zonotrichia capensis");
         // Act
         Avistamiento actualizado = servicio.actualizar(1L, nuevosDatos).orElseThrow();
         // Assert
         assertEquals(1L, actualizado.getId());
         assertEquals("Zonotrichia capensis", actualizado.getEspecie());
-        verify(repository, times(1)).save(existente);
+        verify(repository, times(1)).guardar(existente);
     }
 }

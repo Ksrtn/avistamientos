@@ -1,16 +1,15 @@
-package co.edu.unbosque.avistamientos.model;
+package co.edu.unbosque.avistamientos.dominio;
 
-import jakarta.persistence.*;
-
-@Entity
+/**
+ * Avistamiento de un ave. Es un objeto del dominio: no sabe nada de JPA, de Spring ni de HTTP.
+ * La persistencia lo guarda con su propia clase (AvistamientoEntidad).
+ */
 public class Avistamiento {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String especie;
     private String lugar;
-    private String fecha;       
+    private String fecha;
     private String observador;
 
     public Avistamiento() {}
