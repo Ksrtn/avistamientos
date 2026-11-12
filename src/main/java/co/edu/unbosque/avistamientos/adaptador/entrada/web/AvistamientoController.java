@@ -1,66 +1,64 @@
-package co.edu.unbosque.avistamientos.controller;
+package co.edu.unbosque.avistamientos.adaptador.entrada.web;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import co.edu.unbosque.avistamientos.aplicacion.puerto.salida.RepositorioDeAvistamientos;
+import co.edu.unbosque.avistamientos.aplicacion.puerto.entrada.GestionarAvistamientos;
 import co.edu.unbosque.avistamientos.dominio.Avistamiento;
 import co.edu.unbosque.avistamientos.dominio.AvistamientoInvalidoException;
-import co.edu.unbosque.avistamientos.servicio.ServicioDeAvistamientos;
 
+/**
+ * Adaptador de entrada: traduce HTTP a llamadas del puerto GestionarAvistamientos
+ * y las respuestas a códigos de estado. No tiene reglas de negocio.
+ */
 @RestController
 @RequestMapping("/avistamientos")
 public class AvistamientoController {
 
-    private final RepositorioDeAvistamientos repository;
-    private final ServicioDeAvistamientos servicio;
+    private final GestionarAvistamientos avistamientos;
 
-    public AvistamientoController(RepositorioDeAvistamientos repository, ServicioDeAvistamientos servicio) {
-        this.repository = repository;
-        this.servicio = servicio;
+    public AvistamientoController(GestionarAvistamientos avistamientos) {
+        this.avistamientos = avistamientos;
     }
 
     @GetMapping
     public List<Avistamiento> listar() {
-        return repository.listar();
+        return avistamientos.listar();
     }
-
 
     @GetMapping("/resumen")
     public Map<String, Long> resumen() {
-        return repository.listar().stream()
-                .collect(Collectors.groupingBy(Avistamiento::getEspecie, Collectors.counting()));
+        return avistamientos.contarPorEspecie();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Avistamiento> ver(@PathVariable Long id) {
-        return repository.buscarPorId(id)
+        return avistamientos.buscar(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     public ResponseEntity<Avistamiento> crear(@RequestBody Avistamiento a) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(servicio.registrar(a));
+        return ResponseEntity.status(HttpStatus.CREATED).body(avistamientos.registrar(a));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Avistamiento> actualizar(@PathVariable Long id, @RequestBody Avistamiento datos) {
-        return servicio.actualizar(id, datos)
+        return avistamientos.actualizar(id, datos)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        if (!repository.existe(id)) {
+        if (!avistamientos.eliminar(id)) {
             return ResponseEntity.notFound().build();
         }
-        repository.eliminar(id);
         return ResponseEntity.noContent().build();
     }
 

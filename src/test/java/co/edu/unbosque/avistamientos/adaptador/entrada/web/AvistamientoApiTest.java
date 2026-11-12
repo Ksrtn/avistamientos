@@ -1,4 +1,4 @@
-package co.edu.unbosque.avistamientos.controller;
+package co.edu.unbosque.avistamientos.adaptador.entrada.web;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
