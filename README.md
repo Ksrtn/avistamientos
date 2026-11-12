@@ -22,14 +22,26 @@ POST y PUT responden 400 con un mensaje por cada campo que falló:
 { "errores": ["especie: debe tener entre 3 y 50 caracteres"] }
 ```
 
-La regla vive en `validacion/ValidadorDeAvistamiento`, separada del controlador.
+La regla vive en `aplicacion/servicio/ValidadorDeAvistamiento`, separada del controlador.
+
+## Arquitectura
+
+El código sigue la arquitectura hexagonal (puertos y adaptadores):
+
+- `dominio`: el avistamiento y la excepción de datos inválidos, sin ningún framework.
+- `aplicacion`: el servicio, el validador y los puertos (`puerto/entrada/GestionarAvistamientos`, `puerto/salida/RepositorioDeAvistamientos` y `puerto/salida/Reloj`).
+- `adaptador/entrada/web`: el controlador REST.
+- `adaptador/salida`: la persistencia con JPA y H2 y el reloj del sistema.
+- `configuracion`: crea el servicio y el validador y les pasa los adaptadores.
+
+El detalle y el diagrama de dependencias están en `docs/taller5-arquitectura-hexagonal.md`.
 
 ## Pruebas
 
 Las pruebas están en `src/test/java`:
 
-- Unitarias: `validacion/ValidadorDeAvistamientoTest` y `servicio/ServicioDeAvistamientosTest`.
-- Integración (HTTP con MockMvc sobre H2 en memoria): `controller/AvistamientoApiTest`.
+- Unitarias: `aplicacion/servicio/ValidadorDeAvistamientoTest` y `aplicacion/servicio/ServicioDeAvistamientosTest`.
+- Integración (HTTP con MockMvc sobre H2 en memoria): `adaptador/entrada/web/AvistamientoApiTest`.
 
 ```bash
 ./mvnw test     # correr todas las pruebas
