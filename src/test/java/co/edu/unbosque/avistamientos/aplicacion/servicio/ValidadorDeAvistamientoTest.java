@@ -1,4 +1,4 @@
-package co.edu.unbosque.avistamientos.validacion;
+package co.edu.unbosque.avistamientos.aplicacion.servicio;
 
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -1,4 +1,4 @@
-package co.edu.unbosque.avistamientos.validacion;
+package co.edu.unbosque.avistamientos.aplicacion.servicio;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import co.edu.unbosque.avistamientos.aplicacion.puerto.salida.Reloj;
 import co.edu.unbosque.avistamientos.dominio.Avistamiento;
 
 @Component

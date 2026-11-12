@@ -1,4 +1,4 @@
-package co.edu.unbosque.avistamientos.servicio;
+package co.edu.unbosque.avistamientos.aplicacion.servicio;
 
 import java.util.List;
 import java.util.Map;
@@ -11,7 +11,6 @@ import co.edu.unbosque.avistamientos.aplicacion.puerto.entrada.GestionarAvistami
 import co.edu.unbosque.avistamientos.aplicacion.puerto.salida.RepositorioDeAvistamientos;
 import co.edu.unbosque.avistamientos.dominio.Avistamiento;
 import co.edu.unbosque.avistamientos.dominio.AvistamientoInvalidoException;
-import co.edu.unbosque.avistamientos.validacion.ValidadorDeAvistamiento;
 
 @Service
 public class ServicioDeAvistamientos implements GestionarAvistamientos {

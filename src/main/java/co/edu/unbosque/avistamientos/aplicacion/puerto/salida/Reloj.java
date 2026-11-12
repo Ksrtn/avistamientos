@@ -1,4 +1,4 @@
-package co.edu.unbosque.avistamientos.validacion;
+package co.edu.unbosque.avistamientos.aplicacion.puerto.salida;
 
 import java.time.LocalDate;
 

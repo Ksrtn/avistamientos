@@ -1,4 +1,4 @@
-package co.edu.unbosque.avistamientos.servicio;
+package co.edu.unbosque.avistamientos.aplicacion.servicio;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -15,8 +15,6 @@ import org.mockito.ArgumentCaptor;
 import co.edu.unbosque.avistamientos.aplicacion.puerto.salida.RepositorioDeAvistamientos;
 import co.edu.unbosque.avistamientos.dominio.Avistamiento;
 import co.edu.unbosque.avistamientos.dominio.AvistamientoInvalidoException;
-import co.edu.unbosque.avistamientos.validacion.RelojFijo;
-import co.edu.unbosque.avistamientos.validacion.ValidadorDeAvistamiento;
 
 public class ServicioDeAvistamientosTest {
 
