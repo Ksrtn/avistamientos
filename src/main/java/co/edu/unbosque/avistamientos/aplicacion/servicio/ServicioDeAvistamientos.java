@@ -5,14 +5,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.springframework.stereotype.Service;
-
 import co.edu.unbosque.avistamientos.aplicacion.puerto.entrada.GestionarAvistamientos;
 import co.edu.unbosque.avistamientos.aplicacion.puerto.salida.RepositorioDeAvistamientos;
 import co.edu.unbosque.avistamientos.dominio.Avistamiento;
 import co.edu.unbosque.avistamientos.dominio.AvistamientoInvalidoException;
 
-@Service
 public class ServicioDeAvistamientos implements GestionarAvistamientos {
 
     private final RepositorioDeAvistamientos repository;

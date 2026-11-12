@@ -7,12 +7,9 @@ import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.stereotype.Component;
-
 import co.edu.unbosque.avistamientos.aplicacion.puerto.salida.Reloj;
 import co.edu.unbosque.avistamientos.dominio.Avistamiento;
 
-@Component
 public class ValidadorDeAvistamiento {
 
     static final int MIN_ESPECIE = 3;
